@@ -48,7 +48,15 @@ const handler: Handler = async (req) => {
     case "/gateaway/endpoints": {
       // Endpoint for update endpoints data
       if (req.method === "POST") {
-        await EndpointDataMemoryCache.setEndpointsData();
+        const status = 200;
+
+        const endpointsData = await EndpointDataMemoryCache.getEndpointsData();
+        await EndpointDataMemoryCache.setEndpointsData(endpointsData);
+
+        resLog(req, status);
+        return Response.json({ data: endpointsData, code: status }, {
+          status: status,
+        });
       }
 
       // Unimplemented Routes
