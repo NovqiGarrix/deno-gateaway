@@ -1,0 +1,8 @@
+{
+    "/todos": {
+        "BASE_URL": "http://localhost:4000"
+    },
+    "/products": {
+        "BASE_URL": "http://localhost:4001"
+    }
+}
