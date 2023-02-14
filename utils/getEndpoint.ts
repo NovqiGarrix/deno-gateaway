@@ -1,5 +1,5 @@
-export function getEndpoint(url: string) {
-  const inURL = new URL(url);
+export function getEndpoint(url: string | URL) {
+  const inURL = (url instanceof URL) ? url : new URL(url);
 
   if (inURL.pathname.includes("gateaway")) return inURL.pathname;
 
@@ -11,8 +11,9 @@ export function getEndpoint(url: string) {
   return `/${splittedURL.join("/")}`;
 }
 
-export function getServiceEndpoint(url: string) {
-  const inURL = new URL(url);
+export function getServiceEndpoint(url: string | URL) {
+  const inURL = (url instanceof URL) ? url : new URL(url);
+
   if (inURL.pathname.includes("gateaway")) return inURL.pathname;
 
   return `/${inURL.pathname.split("/")[1]}`;

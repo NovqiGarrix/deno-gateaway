@@ -1,6 +1,1 @@
-
-interface EndpointData {
-    BASE_URL: string;
-}
-
-export type IEndpointsData = Record<string, EndpointData>;
+export type { Endpoint } from "./schemas/endpoint.schema.ts";

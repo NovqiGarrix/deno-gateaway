@@ -1,28 +1,35 @@
-import { IEndpointsData } from '../types.ts';
+import { Endpoint } from "../types.ts";
 
 export class EndpointDataMemoryCache {
-    public static endpointsData: IEndpointsData;
+  public static endpointsData: Array<Endpoint>;
 
-    public static async setEndpointsData(endpointsData?: IEndpointsData) {
-        if (endpointsData) {
-            this.endpointsData = endpointsData;
-            return;
-        }
-
-        this.endpointsData = await this.getEndpointsData();
+  public static async setEndpointsData(endpointsData?: Array<Endpoint>) {
+    if (endpointsData) {
+      this.endpointsData = endpointsData;
+      return;
     }
 
-    public static async getEndpointsData(): Promise<IEndpointsData> {
-        // This should be an HTTP request to the endpoints service
+    this.endpointsData = await this.getEndpointsData();
+  }
 
-        const decoder = new TextDecoder();
-        const data = await Deno.readFile("./endpoints_test.json");
+  public static async getEndpointsData(
+    file = "./endpoints.json",
+  ): Promise<Array<Endpoint>> {
+    // This should be an HTTP request to the endpoints service
 
-        return JSON.parse(decoder.decode(data));
-    }
+    const decoder = new TextDecoder();
+    const data = await Deno.readFile(file);
 
-    public static getCachedEndpointsData(): IEndpointsData {
-        return this.endpointsData;
-    }
+    const endpointsData = JSON.parse(decoder.decode(data)) as {
+      endpoints: Array<Endpoint>;
+    };
 
+    // VALIDATE EACH ENDPOINT
+
+    return endpointsData.endpoints;
+  }
+
+  public static getCachedEndpointsData(): Array<Endpoint> {
+    return this.endpointsData;
+  }
 }

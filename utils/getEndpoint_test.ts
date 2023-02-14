@@ -45,6 +45,10 @@ Deno.test("#2. Get Service Endpoint", async (t) => {
       url: "https://localhost:8080/gateaway/endpoints",
       endpoint: "/gateaway/endpoints",
     },
+    {
+      url: new URL("https://localhost:8080/gateaway/endpoints"),
+      endpoint: "/gateaway/endpoints",
+    },
   ];
 
   for (const req of requestsURLs) {
