@@ -1,3 +1,5 @@
+import "https://deno.land/x/dotenv@v3.2.0/load.ts";
+
 export {
   Application,
   Context,
@@ -40,3 +42,7 @@ export { red } from "https://deno.land/std@0.152.0/fmt/colors.ts";
 
 // Zod
 export { z } from "https://deno.land/x/zod@v3.20.2/mod.ts";
+
+// Redis Client
+export { connect as connectRedis } from "https://deno.land/x/redis@v0.26.0/mod.ts";
+export type { Redis } from "https://deno.land/x/redis@v0.26.0/mod.ts";

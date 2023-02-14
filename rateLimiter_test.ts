@@ -1,70 +1,39 @@
-import "https://deno.land/x/dotenv@v3.2.0/load.ts";
+import { Status } from "./deps.ts";
+import { expect } from "./testDeps.ts";
+import logger from "./utils/logger.ts";
 
-import { assertEquals, expect } from "./testDeps.ts";
+// function sleep(time: number) {
+//   return new Promise<void>((resolve) => setTimeout(resolve, time));
+// }
 
-import sleep from "./utils/sleep.ts";
-import { AdaptiveRateLimiter } from "./rateLimiter.ts";
+Deno.test("$Fix Rate Limiter Testing", async () => {
+  const responseStatusses: Array<number> = [];
 
-Deno.test("Should Reset request counter every second", async () => {
-  const adaptiveRateLimiter = AdaptiveRateLimiter.getInstance(true);
-  console.log(adaptiveRateLimiter.identifier);
+  // 10 should be a good response, and 2 should be too many request
+  const emptyArray = Array(10 + 2).fill(0);
 
-  assertEquals(adaptiveRateLimiter.getRequestCounter(), 0);
-  assertEquals(adaptiveRateLimiter.getResponseTime(), 0);
+  logger.info("STARTING REQUESTS...");
+  await Promise.all(
+    emptyArray.map(async () => {
+      const resp = await fetch(`http://0.0.0.0:${Deno.env.get("PORT")}`, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-  Array(10).fill(0).forEach(() => {
-    adaptiveRateLimiter.addRequestCounter();
-    adaptiveRateLimiter.addResponseTime(500);
-  });
+      await resp.body?.cancel();
 
-  await sleep(1000);
+      responseStatusses.push(resp.status);
+    }),
+  );
 
-  assertEquals(adaptiveRateLimiter.getRequestCounter(), 0);
-  assertEquals(adaptiveRateLimiter.getResponseTime(), 0);
+  logger.info("DONE!");
 
-  adaptiveRateLimiter.closeAllIntervals();
+  const OKResponse = responseStatusses.filter((status) => status === Status.OK);
+  const tooManyRequestsResponse = responseStatusses.filter((status) =>
+    status === Status.TooManyRequests
+  );
+
+  expect(OKResponse.length).toBe(10);
+  expect(tooManyRequestsResponse.length).toBe(2);
 });
-
-Deno.test(
-  "It should reduce the rate limit if the response time is below `SLOW_RESPONSE_TIME`",
-  async () => {
-    const adaptiveRateLimiter = AdaptiveRateLimiter.getInstance(true);
-
-    const prevRateLimit = adaptiveRateLimiter.getRateLimit();
-
-    Array(10).fill(0).forEach(() => {
-      adaptiveRateLimiter.addRequestCounter();
-      adaptiveRateLimiter.addResponseTime(2000);
-    });
-
-    await sleep(2000);
-
-    const currentRateLimit = adaptiveRateLimiter.getRateLimit();
-
-    expect(prevRateLimit).toBeGreaterThan(currentRateLimit);
-
-    adaptiveRateLimiter.closeAllIntervals();
-  },
-);
-
-Deno.test(
-  "Set rate limit to above current rate limit if the response time is above the `SLOW_RESPONSE_TIME`",
-  async () => {
-    const adaptiveRateLimiter = AdaptiveRateLimiter.getInstance(true);
-
-    const prevRateLimit = adaptiveRateLimiter.getRateLimit();
-
-    Array(10).fill(0).forEach(() => {
-      adaptiveRateLimiter.addRequestCounter();
-      adaptiveRateLimiter.addResponseTime(500);
-    });
-
-    await sleep(2000);
-
-    const currentRateLimit = adaptiveRateLimiter.getRateLimit();
-
-    expect(currentRateLimit).toBeGreaterThan(prevRateLimit);
-
-    adaptiveRateLimiter.closeAllIntervals();
-  },
-);

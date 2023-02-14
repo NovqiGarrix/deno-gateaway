@@ -7,8 +7,8 @@ import prepareEndpoints from "./helpers/prepareEndpoints.ts";
 import logAndErrorHandler from "./middlewares/logAndErrorHandler.ts";
 
 import logger from "./utils/logger.ts";
+import rateLimiter from "./rateLimiter.ts";
 import forwardMiddleware from "./middlewares/forward.middleware.ts";
-import rateLimiterMiddleware from "./middlewares/rateLimiter.middleware.ts";
 
 export default async function createServer() {
   const CORS_ORIGIN = Deno.env.get("CORS_ORIGIN")!;
@@ -24,7 +24,7 @@ export default async function createServer() {
   }));
 
   // Rate Limiter Middleware
-  app.use(rateLimiterMiddleware);
+  app.use(rateLimiter);
 
   // Logger
   app.use(logAndErrorHandler);
@@ -32,7 +32,7 @@ export default async function createServer() {
   // This is the main logic of the gateaway
   app.use(forwardMiddleware);
 
-  router.post("/gateaway", gateawayRoutes);
+  router.post("/gateway", gateawayRoutes);
 
   app.use(router.routes());
 

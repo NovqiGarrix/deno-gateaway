@@ -1,10 +1,10 @@
 // deno-lint-ignore-file no-explicit-any
 
 import { Context, Status } from "../deps.ts";
+
+import logger from "../utils/logger.ts";
 import { mapEndpoint } from "../utils/mapEndpoint.ts";
 import { getEndpoint, getServiceEndpoint } from "../utils/getEndpoint.ts";
-import adaptiveRateLimiter from "../rateLimiter.ts";
-import logger from "../utils/logger.ts";
 
 export default async function forwardMiddleware(
   ctx: Context<Record<string, any>, Record<string, any>>,
@@ -17,10 +17,9 @@ export default async function forwardMiddleware(
 
   // Check if the service is available
   if (!serviceEndpointsData) {
-    // Check if the request is for the gateaway endpoints
-    if (request.url.pathname.startsWith("/gateaway")) {
-      await next();
-      return;
+    // Check if the request is for the gateway endpoints
+    if (request.url.pathname.startsWith("/gateway")) {
+      return next();
     }
 
     response.status = Status.ServiceUnavailable;
@@ -48,13 +47,16 @@ export default async function forwardMiddleware(
     duration = endTime - startTime;
 
     if (resp.headers.get("content-type") !== "application/json") {
-      // Handle stream / redirect
-      ctx.response
-        .headers.set(
-          "content-type",
-          resp.headers.get("content-type") || "text/plain",
-        );
-      ctx.response.body = resp.body;
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = {
+        code: Status.InternalServerError,
+        status: "Internal Server Error",
+        errors: [
+          {
+            error: "Internal Server Error",
+          },
+        ],
+      };
       return;
     }
 
@@ -69,10 +71,7 @@ export default async function forwardMiddleware(
     response.status = Status.InternalServerError;
     response.body = {
       code: Status.InternalServerError,
-      error: "Internal Server Error",
+      status: "Internal Server Error",
     };
-  } finally {
-    adaptiveRateLimiter.reduceRequestCounter();
-    adaptiveRateLimiter.addResponseTime(duration);
   }
 }
