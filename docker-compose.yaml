@@ -1,0 +1,32 @@
+services:
+  caddy:
+    container_name: caddy-server
+    image: caddy/caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - $PWD/Caddyfile:/etc/caddy/Caddyfile
+      - $PWD/site:/srv
+      - caddy_data:/data
+      - caddy_config:/config
+
+  web:
+    build: .
+    container_name: gateway
+    restart: unless-stopped
+    image: novqigarrix/gateway
+    env_file:
+      - .env
+    
+  redis:
+    container_name: redis
+    image: redis:6-alpine
+    volumes:
+      - redis_data:/data
+
+volumes:
+  caddy_data:
+  redis_data:
+  caddy_config:

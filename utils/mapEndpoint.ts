@@ -1,6 +1,6 @@
-import { EndpointDataMemoryCache } from "./endpointDataMemoryCache.ts";
+import serviceManager from "./serviceManager.ts";
 
 export function mapEndpoint(endpoint: string) {
-  const endpointsData = EndpointDataMemoryCache.getCachedEndpointsData();
-  return endpointsData.find((e) => e.endpoint === endpoint);
+  const endpointsData = serviceManager.getAll();
+  return endpointsData.get(endpoint);
 }

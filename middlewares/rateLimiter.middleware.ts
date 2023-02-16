@@ -1,9 +1,8 @@
 // deno-lint-ignore-file no-explicit-any
-import { Context, Status } from "./deps.ts";
+import { Context, Status } from "../deps.ts";
+import redisClient from "../utils/redisClient.ts";
 
-import redisClient from "./utils/redisClient.ts";
-
-const config = {
+export const rateLimitConfig = {
   MAX_REQUESTS: 10,
   TIME_WINDOW: 60,
 };
@@ -12,17 +11,20 @@ export default async function rateLimiter(
   ctx: Context<Record<string, any>, Record<string, any>>,
   next: () => Promise<unknown>,
 ) {
+  const { MAX_REQUESTS, TIME_WINDOW } = rateLimitConfig;
   const { request: req, response: res } = ctx;
 
   const key = req.ip;
 
   const now = Date.now() / 60; // In seconds
-  const start = now - config.TIME_WINDOW; // Start where the race is starting
+  const start = now - TIME_WINDOW; // Start where the race is starting
 
   const replies = await redisClient.zrevrangebyscore(key, "+inf", start);
 
-  if (replies.length > config.MAX_REQUESTS) {
-    const remainingTime = Math.round(config.TIME_WINDOW - (now - +replies[0]));
+  if (replies.length > MAX_REQUESTS) {
+    const remainingTime = Math.round(
+      TIME_WINDOW - (now - +replies[0]),
+    );
 
     res.status = Status.TooManyRequests;
     res.body = {
@@ -37,7 +39,7 @@ export default async function rateLimiter(
     };
   } else {
     await redisClient.zadd(key, now, now);
-    await redisClient.expire(key, config.TIME_WINDOW);
+    await redisClient.expire(key, TIME_WINDOW);
 
     return next();
   }

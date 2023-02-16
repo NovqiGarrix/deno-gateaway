@@ -1,6 +1,10 @@
 import { Router, Status } from "../deps.ts";
-import { EndpointDataMemoryCache } from "../utils/endpointDataMemoryCache.ts";
-import logger from "../utils/logger.ts";
+
+import {
+  addService,
+  deleteService,
+  getService,
+} from "../controllers/gateway.controller.ts";
 
 const router = new Router();
 
@@ -12,28 +16,10 @@ router.get("/healthcheck", ({ response }) => {
   };
 });
 
-router.post("/endpoints", async (ctx) => {
-  const { response } = ctx;
+router.get("/services", getService);
 
-  try {
-    const endpointsData = await EndpointDataMemoryCache
-      .getEndpointsData();
-    await EndpointDataMemoryCache.setEndpointsData(endpointsData);
+router.post("/services", addService);
 
-    response.status = Status.OK;
-    response.body = {
-      code: Status.OK,
-      data: endpointsData,
-    };
-  } catch (err) {
-    logger.error(`Err In: /gateaway/endpoints POST: ${err}`);
-
-    response.status = Status.InternalServerError;
-    response.body = {
-      code: Status.InternalServerError,
-      error: "Error updating endpoints data",
-    };
-  }
-});
+router.delete("/services", deleteService);
 
 export default router.routes();

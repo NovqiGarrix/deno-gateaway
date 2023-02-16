@@ -30,42 +30,14 @@ export default async function forwardMiddleware(
     return;
   }
 
-  let duration = 0;
-
   try {
-    // The request start time
-    const startTime = Date.now();
-
     const endpoint = getEndpoint(request.url);
     const resp = await fetch(
       `${serviceEndpointsData.base_url}${endpoint}`,
       request.originalRequest,
     );
 
-    // The request end time
-    const endTime = Date.now();
-    duration = endTime - startTime;
-
-    if (resp.headers.get("content-type") !== "application/json") {
-      ctx.response.status = Status.InternalServerError;
-      ctx.response.body = {
-        code: Status.InternalServerError,
-        status: "Internal Server Error",
-        errors: [
-          {
-            error: "Internal Server Error",
-          },
-        ],
-      };
-      return;
-    }
-
-    response.status = resp.status;
-    response.headers = resp.headers;
-    response.body = {
-      ...await resp.json(),
-      took: duration,
-    };
+    response.body = resp.body;
   } catch (error) {
     logger.error(`Error forwading request: ${error.message}`);
     response.status = Status.InternalServerError;

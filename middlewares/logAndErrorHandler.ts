@@ -20,26 +20,20 @@ export default async function logAndErrorHandler(
     await next();
 
     const endTime = Date.now();
-    const time = endTime - startTime;
+    const took = endTime - startTime;
 
     logger.success(
-      `[TOOK]: ${time}ms [METHOD]: "${request.method}" [CODE]: "${response.status}" [ENDPOINT]: "${
-        request.originalRequest.url.slice(0, 200)
-      }..."`,
+      `[TOOK]: ${took}ms [METHOD]: "${request.method}" [CODE]: "${response.status}" [ENDPOINT]: "${request.originalRequest.url}"`,
     );
   } catch (error) {
-    logger.error(error);
-
     let message: string = error.message;
-    response.status = error.status ?? Status.InternalServerError;
+    response.status = error.status || Status.InternalServerError;
 
     const endTime = Date.now();
-    const time = endTime - startTime;
+    const took = endTime - startTime;
     logger.info(
       red(
-        `[TOOK]: ${time}ms [METHOD]: "${request.method}" [STATUS]: "${response.status}" [ENDPOINT]: "${
-          request.originalRequest.url.slice(0, 200)
-        }..."`,
+        `[TOOK]: ${took}ms [METHOD]: "${request.method}" [STATUS]: "${response.status}" [ENDPOINT]: "${request.originalRequest.url}"`,
       ),
     );
 
@@ -55,7 +49,10 @@ export default async function logAndErrorHandler(
       response.status = Status.InternalServerError;
     }
 
-    if (response.status === Status.InternalServerError) {
+    console.log(error);
+
+    if (response.status >= Status.InternalServerError) {
+      logger.error(`Catched 5xx Error: ${JSON.stringify(error)}`);
       response.body = {
         error: "An error occurred while doing your request!",
         code: response.status,
@@ -64,7 +61,9 @@ export default async function logAndErrorHandler(
     }
 
     response.body = {
-      error: message,
+      errors: [{
+        error: message,
+      }],
       code: response.status,
     };
   }

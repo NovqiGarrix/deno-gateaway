@@ -7,16 +7,14 @@ export {
   Router,
   Status,
 } from "https://deno.land/x/oak@v11.1.0/mod.ts";
-export type { Middleware } from "https://deno.land/x/oak@v11.1.0/mod.ts";
+export type {
+  Middleware,
+  RouteParams,
+  RouterContext,
+} from "https://deno.land/x/oak@v11.1.0/mod.ts";
 
 // Oak Helpers
 export { getQuery } from "https://deno.land/x/oak@v11.1.0/helpers.ts";
-
-// Oak Router
-export type {
-  RouteParams,
-  RouterContext,
-} from "https://deno.land/x/oak@v11.1.0/router.ts";
 
 // Logger
 export {
