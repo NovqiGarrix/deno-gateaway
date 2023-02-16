@@ -1,9 +1,11 @@
 // deno-lint-ignore-file no-explicit-any
 import { Context, Status } from "../deps.ts";
+
+import logger from "../utils/logger.ts";
 import redisClient from "../utils/redisClient.ts";
 
 export const rateLimitConfig = {
-  MAX_REQUESTS: 10,
+  MAX_REQUESTS: +(Deno.env.get("MIN_REQUESTS") || 10),
   TIME_WINDOW: 60,
 };
 
@@ -12,6 +14,8 @@ export default async function rateLimiter(
   next: () => Promise<unknown>,
 ) {
   const { MAX_REQUESTS, TIME_WINDOW } = rateLimitConfig;
+  logger.info(`${MAX_REQUESTS} per second`);
+
   const { request: req, response: res } = ctx;
 
   const key = req.ip;

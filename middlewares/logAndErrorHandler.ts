@@ -1,7 +1,9 @@
 // deno-lint-ignore-file no-explicit-any
 
 import { Context, red, Status } from "../deps.ts";
+
 import logger from "../utils/logger.ts";
+import adaptiveRateLimiter from "../adaptiveRateLimiter.ts";
 
 export default async function logAndErrorHandler(
   { request, response }: Context<Record<string, any>, Record<string, any>>,
@@ -21,6 +23,7 @@ export default async function logAndErrorHandler(
 
     const endTime = Date.now();
     const took = endTime - startTime;
+    adaptiveRateLimiter.addResponseTime(took);
 
     logger.success(
       `[TOOK]: ${took}ms [METHOD]: "${request.method}" [CODE]: "${response.status}" [ENDPOINT]: "${request.originalRequest.url}"`,
@@ -31,6 +34,8 @@ export default async function logAndErrorHandler(
 
     const endTime = Date.now();
     const took = endTime - startTime;
+    adaptiveRateLimiter.addResponseTime(took);
+
     logger.info(
       red(
         `[TOOK]: ${took}ms [METHOD]: "${request.method}" [STATUS]: "${response.status}" [ENDPOINT]: "${request.originalRequest.url}"`,
@@ -48,8 +53,6 @@ export default async function logAndErrorHandler(
       message = error.message;
       response.status = Status.InternalServerError;
     }
-
-    console.log(error);
 
     if (response.status >= Status.InternalServerError) {
       logger.error(`Catched 5xx Error: ${JSON.stringify(error)}`);
