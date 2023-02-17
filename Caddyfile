@@ -1,4 +1,4 @@
-gateway.novqi.site {
+api.novqi.site {
     reverse_proxy http://web:8080 {
         header_down Strict-Transport-Security max-age=31536000;
     }

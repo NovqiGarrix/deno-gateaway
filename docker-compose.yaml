@@ -19,14 +19,7 @@ services:
     image: novqigarrix/gateway
     env_file:
       - .env
-    
-  redis:
-    container_name: redis
-    image: redis:6-alpine
-    volumes:
-      - redis_data:/data
 
 volumes:
   caddy_data:
-  redis_data:
   caddy_config:
