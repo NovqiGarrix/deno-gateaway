@@ -8,7 +8,7 @@ export function getEndpoint(url: string | URL) {
   splittedURL.shift();
   splittedURL.shift();
 
-  return `/${splittedURL.join("/")}`;
+  return `/${splittedURL.join("/")}?${inURL.searchParams.toString()}`;
 }
 
 export function getServiceEndpoint(url: string | URL) {
