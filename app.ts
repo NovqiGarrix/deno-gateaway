@@ -3,6 +3,8 @@ import "https://deno.land/x/dotenv@v3.2.0/load.ts";
 import { Application, oakCors, Router } from "./deps.ts";
 
 import logger from "./utils/logger.ts";
+import serviceManager from "./utils/serviceManager.ts";
+
 import gateawayRoutes from "./routes/gateaway.routes.ts";
 
 import rateLimiter from "./middlewares/rateLimiter.middleware.ts";
@@ -36,11 +38,20 @@ export default function createServer() {
 
   app.use(router.routes());
 
-  app.addEventListener("listen", ({ hostname, port }) => {
-    logger.info(
-      `Listening on ${hostname}:${port}`
-        .toUpperCase(),
-    );
+  app.addEventListener("listen", async ({ hostname, port }) => {
+    try {
+      logger.info("Getting stored services from Redis...");
+      await serviceManager.getFromRedis();
+
+      logger.info(
+        `Listening on ${hostname}:${port}`
+          .toUpperCase(),
+      );
+    } catch (error) {
+      logger.error(`An error in 'onListen': `);
+      console.error(error);
+      Deno.exit(1);
+    }
   });
 
   return app;

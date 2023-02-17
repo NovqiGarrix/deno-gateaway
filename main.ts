@@ -1,7 +1,9 @@
 import "https://deno.land/x/dotenv@v3.2.0/load.ts";
-import createServer from "./app.ts";
 
-const app = await createServer();
+import createServer from "./app.ts";
+import serviceManager from "./utils/serviceManager.ts";
+
+const app = createServer();
 const abortController = new AbortController();
 
 const signals = ["SIGINT", "SIGTERM"];
@@ -18,9 +20,12 @@ for (let systemSignal of signals) {
 
 // Shutdown the server when the process is about to exit
 globalThis.addEventListener("unload", () => {
-  const reason = "🦕 Deno is exiting!! ⬇️";
-  console.log(reason);
-  abortController.abort(reason);
+  serviceManager.saveToRedis()
+    .finally(() => {
+      const reason = "🦕 Deno is exiting!! ⬇️";
+      console.log(reason);
+      abortController.abort(reason);
+    });
 });
 
 await app.listen({
