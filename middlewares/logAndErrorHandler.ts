@@ -51,13 +51,16 @@ export default async function logAndErrorHandler(
       response.status = Status.ServiceUnavailable;
     } else {
       message = error.message;
-      response.status = Status.InternalServerError;
     }
 
     if (response.status >= Status.InternalServerError) {
       logger.error(`Catched 5xx Error: ${JSON.stringify(error)}`);
       response.body = {
-        error: "An error occurred while doing your request!",
+        errors: [
+          {
+            error: "An error occurred while doing your request!",
+          },
+        ],
         code: response.status,
       };
       return;
