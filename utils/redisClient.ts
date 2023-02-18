@@ -1,16 +1,19 @@
 import { connectRedis, Redis } from "../deps.ts";
+import logger from "./logger.ts";
 
 class RedisClient {
-  public static redisClient: Redis;
+  private static redisClient: Redis;
 
   public static async getClient(): Promise<Redis> {
     if (this.redisClient) return this.redisClient;
 
+    logger.info("Creating new Redis instance...");
+
     const REDIS_PORT = +Deno.env.get("REDIS_PORT")!;
-    const REDIS_HOSTNAME = Deno.env.get("REDIS_HOSTNAME")!;
+    const REDIS_HOSTNAME = Deno.env.get("REDIS_HOSTNAME");
     const REDIS_PASSWORD = Deno.env.get("REDIS_PASSWORD");
 
-    if (!REDIS_PORT || !REDIS_HOSTNAME) {
+    if (isNaN(REDIS_PORT) || !REDIS_HOSTNAME) {
       throw new Error(
         "Missing required REDIS_PORT and REDIS_HOSTNAME variables from env variables",
       );

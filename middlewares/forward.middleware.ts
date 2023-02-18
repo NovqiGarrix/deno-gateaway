@@ -37,6 +37,11 @@ export default async function forwardMiddleware(
       request.originalRequest,
     );
 
+    for (const [key, value] of resp.headers.entries()) {
+      response.headers.set(key, value);
+    }
+
+    response.status = resp.status;
     response.body = resp.body;
   } catch (error) {
     logger.error(`Error forwading request: ${error.message}`);

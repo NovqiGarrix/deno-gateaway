@@ -8,7 +8,11 @@ export function getEndpoint(url: string | URL) {
   splittedURL.shift();
   splittedURL.shift();
 
-  return `/${splittedURL.join("/")}?${inURL.searchParams.toString()}`;
+  const isSearchParanExist = Array.from(inURL.searchParams.keys()).length > 0;
+
+  return `/${splittedURL.join("/")}${
+    isSearchParanExist ? "?" + inURL.searchParams.toString() : ""
+  }`;
 }
 
 export function getServiceEndpoint(url: string | URL) {

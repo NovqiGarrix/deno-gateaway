@@ -4,10 +4,13 @@ import {
   assertExists,
   assertStringIncludes,
   superdeno,
+  superoak,
 } from "../testDeps.ts";
 
 import createServer from "../app.ts";
+
 import serviceManager from "../utils/serviceManager.ts";
+
 import { invalidBaseUrl } from "../schemas/service.schema.ts";
 
 Deno.test("#1. Success to Add a Service", async () => {
@@ -15,17 +18,17 @@ Deno.test("#1. Success to Add a Service", async () => {
 
   const reqBody = { base_url: "http://localhost:4000/api", endpoint: "/todos" };
 
-  await superdeno(app.handle.bind(app))
-    .post("/gateway/services")
+  const requests = await superoak(app, false);
+
+  await requests.post("/gateway/services")
     .send(reqBody)
+    .expect(Status.Created)
     .expect((res) => {
-      const { body, headers, status } = res;
+      const { body, headers } = res;
 
       const contentType = headers["content-type"].toString();
       assertExists(contentType);
       assertStringIncludes(contentType!, "application/json");
-
-      assertEquals(status, Status.Created);
 
       assertEquals(body, {
         code: 201,

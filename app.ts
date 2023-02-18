@@ -41,7 +41,7 @@ export default function createServer() {
   app.addEventListener("listen", async ({ hostname, port }) => {
     try {
       logger.info("Getting stored services from Redis...");
-      await serviceManager.getFromRedis();
+      await serviceManager.getFromRedisAndSetToMemory();
 
       logger.info(
         `Listening on ${hostname}:${port}`
